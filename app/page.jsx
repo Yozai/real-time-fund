@@ -2082,29 +2082,30 @@ export default function HomePage() {
     return () => subscription.unsubscribe();
   }, []);
 
-  useEffect(() => {
-    if (!isSupabaseConfigured || !user?.id) return;
-    const channel = supabase
-      .channel(`user-configs-${user.id}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'user_configs', filter: `user_id=eq.${user.id}` }, async (payload) => {
-        const incoming = payload?.new?.data;
-        if (!isPlainObject(incoming)) return;
-        const incomingComparable = getComparablePayload(incoming);
-        if (!incomingComparable || incomingComparable === lastSyncedRef.current) return;
-        await applyCloudConfig(incoming, payload.new.updated_at);
-      })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'user_configs', filter: `user_id=eq.${user.id}` }, async (payload) => {
-        const incoming = payload?.new?.data;
-        if (!isPlainObject(incoming)) return;
-        const incomingComparable = getComparablePayload(incoming);
-        if (!incomingComparable || incomingComparable === lastSyncedRef.current) return;
-        await applyCloudConfig(incoming, payload.new.updated_at);
-      })
-      .subscribe();
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user?.id]);
+  // 实时同步
+  // useEffect(() => {
+  //   if (!isSupabaseConfigured || !user?.id) return;
+  //   const channel = supabase
+  //     .channel(`user-configs-${user.id}`)
+  //     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'user_configs', filter: `user_id=eq.${user.id}` }, async (payload) => {
+  //       const incoming = payload?.new?.data;
+  //       if (!isPlainObject(incoming)) return;
+  //       const incomingComparable = getComparablePayload(incoming);
+  //       if (!incomingComparable || incomingComparable === lastSyncedRef.current) return;
+  //       await applyCloudConfig(incoming, payload.new.updated_at);
+  //     })
+  //     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'user_configs', filter: `user_id=eq.${user.id}` }, async (payload) => {
+  //       const incoming = payload?.new?.data;
+  //       if (!isPlainObject(incoming)) return;
+  //       const incomingComparable = getComparablePayload(incoming);
+  //       if (!incomingComparable || incomingComparable === lastSyncedRef.current) return;
+  //       await applyCloudConfig(incoming, payload.new.updated_at);
+  //     })
+  //     .subscribe();
+  //   return () => {
+  //     supabase.removeChannel(channel);
+  //   };
+  // }, [user?.id]);
 
   const handleSendOtp = async (e) => {
     e.preventDefault();
